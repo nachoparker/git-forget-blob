@@ -11,7 +11,8 @@
 #   It rewrites history, therefore will change commit references and delete tags
 function git-forget-blob()
 {
-  git repack -A
+  test -d .git || { echo "Need to be at base of a git repository" && return 1; }
+  git repack -Aq
   ls .git/objects/pack/*.idx &>/dev/null || {
     echo "there is nothing to be forgotten in this repo" && return;
   }
@@ -22,14 +23,14 @@ function git-forget-blob()
     unset FILE
   done
   [[ "$FILE" == "" ]] && { echo "$1 not found in repo history" && return; }
- 
+
   git tag | xargs git tag -d
   git filter-branch --index-filter "git rm --cached --ignore-unmatch $FILE"
   rm -rf .git/refs/original/ .git/refs/remotes/ .git/*_HEAD .git/logs/
   git for-each-ref --format="%(refname)" refs/original/ | \
     xargs -n1 --no-run-if-empty git update-ref -d
   git reflog expire --expire-unreachable=now --all
-  git repack -A -d
+  git repack -q -A -d
   git prune
 }
 # License
@@ -49,3 +50,4 @@ function git-forget-blob()
 # Free Software Foundation, Inc., 59 Temple Place, Suite 330,
 # Boston, MA  02111-1307  USA
 git-forget-blob $@
+
