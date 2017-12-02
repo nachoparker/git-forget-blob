@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Completely remove a file from a git repository history
 #
 # Copyleft 2017 by Ignacio Nunez Hernanz <nacho _a_t_ ownyourbits _d_o_t_ com>
