@@ -28,8 +28,8 @@ function git-forget-blob()
   git branch -a | grep "remotes\/" | awk '{ print $1 }' | cut -f2 -d/ | while read r; do git remote rm $r 2>/dev/null; done
   git filter-branch --index-filter "git rm --cached --ignore-unmatch $FILE"
   rm -rf .git/refs/original/ .git/refs/remotes/ .git/*_HEAD .git/logs/
-  git for-each-ref --format="%(refname)" refs/original/ | \
-    xargs -n1 --no-run-if-empty git update-ref -d
+  (git for-each-ref --format="%(refname)" refs/original/ || echo :) | \
+    xargs -n1 git update-ref -d
   git reflog expire --expire-unreachable=now --all
   git repack -q -A -d
   git gc --aggressive --prune=now
