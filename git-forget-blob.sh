@@ -16,6 +16,7 @@ function git-forget-blob()
   ls .git/objects/pack/*.idx &>/dev/null || {
     echo "there is nothing to be forgotten in this repo" && return; 
   }
+  echo "Read blobs..."
   local BLOBS=( $( git verify-pack -v .git/objects/pack/*.idx | grep blob | awk '{ print $1 }' ) )
   for ref in ${BLOBS[@]}; do
     local FILE="$( git rev-list --objects --all | grep $ref | awk '{ print $2 }' )"
@@ -24,14 +25,18 @@ function git-forget-blob()
   done
   [[ "$FILE" == "" ]] && { echo "$1 not found in repo history" && return; }
 
-  git tag | xargs git tag -d
+  echo "Wipe out remotes..."
   git branch -a | grep "remotes\/" | awk '{ print $1 }' | cut -f2 -d/ | while read r; do git remote rm $r 2>/dev/null; done
-  git filter-branch --index-filter "git rm --cached --ignore-unmatch $FILE"
+  echo "Modify history..."
+  git filter-branch --index-filter "git rm --cached --ignore-unmatch $FILE" --force -- --branches --tags
+  echo "Wipe out refs..."
   rm -rf .git/refs/original/ .git/refs/remotes/ .git/*_HEAD .git/logs/
   (git for-each-ref --format="%(refname)" refs/original/ || echo :) | \
-    xargs -n1 git update-ref -d
+    xargs --no-run-if-empty -n1 git update-ref -d
+  echo "Wipe out reflog..."
   git reflog expire --expire-unreachable=now --all
   git repack -q -A -d
+  echo "GC prune..."
   git gc --aggressive --prune=now
 }
 # License
