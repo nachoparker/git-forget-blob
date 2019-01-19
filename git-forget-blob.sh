@@ -18,15 +18,15 @@ function git-forget-blob()
   }
   echo "Read blobs..."
   local BLOBS=( $( git verify-pack -v .git/objects/pack/*.idx | grep blob | awk '{ print $1 }' ) )
-  for ref in ${BLOBS[@]}; do
-    local FILE="$( git rev-list --objects --all | grep $ref | awk '{ print $2 }' )"
+  for ref in "${BLOBS[@]}"; do
+    local FILE="$( git rev-list --objects --all | grep "$ref" | awk '{ print $2 }' )"
     [[ "$FILE" == "$1" ]] && break
     unset FILE
   done
   [[ "$FILE" == "" ]] && { echo "$1 not found in repo history" && return; }
 
   echo "Wipe out remotes..."
-  git branch -a | grep "remotes\/" | awk '{ print $1 }' | cut -f2 -d/ | while read r; do git remote rm $r 2>/dev/null; done
+  git branch -a | grep "remotes\/" | awk '{ print $1 }' | cut -f2 -d/ | while read -r r; do git remote rm "$r" 2>/dev/null; done
   echo "Modify history..."
   git filter-branch --index-filter "git rm --cached --ignore-unmatch $FILE" --force -- --branches --tags
   echo "Wipe out refs..."
@@ -55,5 +55,5 @@ function git-forget-blob()
 # along with this script; if not, write to the
 # Free Software Foundation, Inc., 59 Temple Place, Suite 330,
 # Boston, MA  02111-1307  USA
-git-forget-blob $@
+git-forget-blob "$@"
 
