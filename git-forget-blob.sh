@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Completely remove a file from a git repository history
+# Completely remove a file from a Git repository history
 #
 # Copyleft 2017 by Ignacio Nunez Hernanz <nacho _a_t_ ownyourbits _d_o_t_ com>
 # GPL licensed (see end of file) * Use at your own risk!
@@ -8,13 +8,13 @@
 #   git-forget-blob file_to_forget
 #
 # Notes:
-#   It rewrites history, therefore will change commit references and delete tags
+#   It rewrites history, therefore will change commit references and delete tags.
 function git-forget-blob()
 {
-  test -d .git || { echo "Need to be at base of a git repository" && return 1; }
+  test -d .git || { echo "Need to be at the base of a Git repository." && return 1; }
   git repack -Aq
   ls .git/objects/pack/*.idx &>/dev/null || {
-    echo "there is nothing to be forgotten in this repo" && return; 
+    echo "There is nothing to be forgotten in this repository." && return; 
   }
   echo "Read blobs..."
   local BLOBS=( $( git verify-pack -v .git/objects/pack/*.idx | grep blob | awk '{ print $1 }' ) )
@@ -23,7 +23,7 @@ function git-forget-blob()
     [[ "$FILE" == "$1" ]] && break
     unset FILE
   done
-  [[ "$FILE" == "" ]] && { echo "$1 not found in repo history" && return; }
+  [[ "$FILE" == "" ]] && { echo "$1 not found in the repository history." && return; }
 
   echo "Wipe out remotes..."
   git branch -a | grep "remotes\/" | awk '{ print $1 }' | cut -f2 -d/ | while read -r r; do git remote rm "$r" 2>/dev/null; done
