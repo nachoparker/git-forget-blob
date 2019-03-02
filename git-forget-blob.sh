@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Completely remove a file from a Git repository history
 #
-# Copyleft 2017 by Ignacio Nunez Hernanz <nacho _a_t_ ownyourbits _d_o_t_ com>
+# Copyleft 2017-2019 by Ignacio Nunez Hernanz <nacho _a_t_ ownyourbits _d_o_t_ com>
 # GPL licensed (see end of file) * Use at your own risk!
 #
 # Usage:
@@ -19,7 +19,8 @@ function git-forget-blob()
   echo "Read blobs..."
   local BLOBS=( $( git verify-pack -v .git/objects/pack/*.idx | grep blob | awk '{ print $1 }' ) )
   for ref in "${BLOBS[@]}"; do
-    local FILE="$( git rev-list --objects --all | grep "$ref" | awk '{ print $2 }' )"
+    local FILE
+    FILE=$( git rev-list --objects --all | grep "$ref" | awk '{ print $2 }' )
     [[ "$FILE" == "$1" ]] && break
     unset FILE
   done
