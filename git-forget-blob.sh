@@ -20,7 +20,7 @@ function git-forget-blob()
   local BLOBS=( $( git verify-pack -v .git/objects/pack/*.idx | grep blob | awk '{ print $1 }' ) )
   for ref in "${BLOBS[@]}"; do
     local FILE
-    FILE=$( git rev-list --objects --all | grep "$ref" | awk '{ print $2 }' )
+    FILE=$( git rev-list --objects --all | grep "$ref" | cut -d" "  -f2- )
     [[ "$FILE" == "$1" ]] && break
     unset FILE
   done
@@ -29,11 +29,10 @@ function git-forget-blob()
   echo "Wipe out remotes..."
   git branch -a | grep "remotes\/" | awk '{ print $1 }' | cut -f2 -d/ | while read -r r; do git remote rm "$r" 2>/dev/null; done
   echo "Modify history..."
-  git filter-branch --index-filter "git rm --cached --ignore-unmatch $FILE" --force -- --branches --tags
+  git filter-branch --index-filter "git rm --cached --ignore-unmatch '$FILE'" --force -- --branches --tags
   echo "Wipe out refs..."
   rm -rf .git/refs/original/ .git/refs/remotes/ .git/*_HEAD .git/logs/
-  (git for-each-ref --format="%(refname)" refs/original/ || echo :) | \
-    xargs --no-run-if-empty -n1 git update-ref -d
+  (git for-each-ref --format="%(refname)" refs/original/ || echo :) | xargs --no-run-if-empty -n1 git update-ref -d
   echo "Wipe out reflog..."
   git reflog expire --expire-unreachable=now --all
   git repack -q -A -d
